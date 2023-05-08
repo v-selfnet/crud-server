@@ -49,21 +49,37 @@ const run = async () => {
       res.send(result)
     })
 
-    // [U - UPDATE] with receive request specific id params from client
+    // [U - UPDATE - GET] with receive request specific id params from client
+    // goto /update route from /users onClick update button
     app.get('/users/:id', async (req, res) => {
       const id = req.params.id;
-      console.log('Update user from DB:', id);
+      console.log('Get Update Request from Clients:', id);
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.findOne(query);
       res.send(result);
     })
 
-    // [U - UPDATE] data receive from client
+    // [U - UPDATE - PUT] server & MongoDB
+    // come /update route & make operation onSubmit={handelUpdate} button
     app.put('/users/:id', async (req, res) => {
+      // server receive updated request
       const id = req.params.id;
-      const updatedUser = req.body;
-      console.log('Update user from DB [PUT]:', id, updatedUser);
-      res.send(updatedUser);
+      const user = req.body;
+      console.log('Update user Request from Client [PUT]:', id, user);
+      // MongoDB received modified data & saved & then send to clirnt via server
+      const filter = {_id: new ObjectId(id)};
+      const option = {upsert: true} // if update value not available create new 
+      const updatedUser = {
+        $set: {
+          name: user.name,
+          email: user.email
+        }
+      }
+      // save in database
+      const result = await userCollection.updateOne(filter, updatedUser, option);
+      console.log('MongoDB send Updated date to Client:', updatedUser)
+      // MongoDB modified data send to client
+      res.send(result);
     })
 
     // [D - DELETE] delete request from client
